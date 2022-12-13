@@ -77,6 +77,11 @@ struct HfCandidateCreator2Prong {
   OutputObj<TH2F> hDcaXYProngs{TH2F("hDcaXYProngs", "DCAxy of 2-prong candidates;#it{p}_{T} (GeV/#it{c};#it{d}_{xy}) (#mum);entries", 100, 0., 20., 200, -500., 500.)};
   OutputObj<TH2F> hDcaZProngs{TH2F("hDcaZProngs", "DCAz of 2-prong candidates;#it{p}_{T} (GeV/#it{c};#it{d}_{z}) (#mum);entries", 100, 0., 20., 200, -500., 500.)};
 
+  // Check background and signal 
+  OutputObj<TH1F> hVtx2ProngX_check{TH1F("hVtx2ProngX_check", "2-prong candidates;#it{x}_{sec. vtx.} (cm);entries", 1000, -2., 2.)};
+  OutputObj<TH1F> hVtx2ProngY_check{TH1F("hVtx2ProngY_check", "2-prong candidates;#it{y}_{sec. vtx.} (cm);entries", 1000, -2., 2.)};
+  OutputObj<TH1F> hVtx2ProngZ_check{TH1F("hVtx2ProngZ_check", "2-prong candidates;#it{z}_{sec. vtx.} (cm);entries", 1000, -20., 20.)};
+
   void init(InitContext const&)
   {
     ccdb->setURL(ccdbUrl);
@@ -207,6 +212,11 @@ struct HfCandidateCreator2Prong {
         massKPi = RecoDecay::m(arrayMomenta, array{massK, massPi});
         hMass2->Fill(massPiK);
         hMass2->Fill(massKPi);
+
+        // Check background and signal
+        hVtx2ProngX_check->Fill(secondaryVertex[0]);
+        hVtx2ProngY_check->Fill(secondaryVertex[1]);
+        hVtx2ProngZ_check->Fill(secondaryVertex[2]);
       }
     }
   }
@@ -217,6 +227,19 @@ struct HfCandidateCreator2ProngExpressions {
   Spawns<aod::HfCand2ProngExt> rowCandidateProng2;
   Produces<aod::HfCand2ProngMcRec> rowMcMatchRec;
   Produces<aod::HfCand2ProngMcGen> rowMcMatchGen;
+
+  // Histos background and signal
+  HistogramRegistry registry{
+    "registry",
+    {{"hVtx2ProngX_background", "2-prong candidates;#it{x}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -2., 2.}}}},
+     {"hVtx2ProngY_background", "2-prong candidates;#it{y}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -2., 2.}}}},
+     {"hVtx2ProngZ_background", "2-prong candidates;#it{z}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -20., 20.}}}},
+     {"hVtx2ProngX_signal", "2-prong candidates;#it{x}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -2., 2.}}}},
+     {"hVtx2ProngY_signal", "2-prong candidates;#it{y}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -2., 2.}}}},
+     {"hVtx2ProngZ_signal", "2-prong candidates;#it{z}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -20., 20.}}}},
+     {"hVtx2ProngX_signal_resolution", "2-prong candidates_resolution;#it{x}_{sec. vtx.} (#μm);entries", {HistType::kTH1F, {{100, -200.0, 200.}}}},
+     {"hVtx2ProngY_signal_resolution", "2-prong candidates_resolution;#it{y}_{sec. vtx.} (#μm);entries", {HistType::kTH1F, {{100, -200.0, 200.}}}},
+     {"hVtx2ProngZ_signal_resolution", "2-prong candidates_resolution;#it{z}_{sec. vtx.} (#μm);entries", {HistType::kTH1F, {{100, -200.0, 200.}}}}}};
 
   void init(InitContext const&) {}
 
@@ -261,6 +284,35 @@ struct HfCandidateCreator2ProngExpressions {
         indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kJPsi, array{+kMuonPlus, -kMuonPlus}, true);
         if (indexRec > -1) {
           flag = 1 << DecayType::JpsiToMuMu;
+        }
+      }
+
+      // Fill histos background and signal
+      if (flag == 0){
+        registry.fill(HIST("hVtx2ProngX_background"), candidate.xSecondaryVertex());
+        registry.fill(HIST("hVtx2ProngY_background"), candidate.ySecondaryVertex());
+        registry.fill(HIST("hVtx2ProngZ_background"), candidate.zSecondaryVertex());
+      } 
+      else {
+        registry.fill(HIST("hVtx2ProngX_signal"), candidate.xSecondaryVertex());
+        registry.fill(HIST("hVtx2ProngY_signal"), candidate.ySecondaryVertex());
+        registry.fill(HIST("hVtx2ProngZ_signal"), candidate.zSecondaryVertex());
+
+        auto prong0 = candidate.prong0_as<aod::BigTracksMC>().mcParticle();
+        double secVtxX_prong0 = prong0.vx();
+        double secVtxY_prong0 = prong0.vy();
+        double secVtxZ_prong0 = prong0.vz();
+        auto prong1 = candidate.prong1_as<aod::BigTracksMC>().mcParticle();
+        double secVtxX_prong1 = prong1.vx();
+        double secVtxY_prong1 = prong1.vy();
+        double secVtxZ_prong1 = prong1.vz();
+
+        LOG(info) << secVtxX_prong0; // for checking
+
+        if ((secVtxX_prong0-secVtxX_prong1 < 1.e-6) && (secVtxY_prong0-secVtxY_prong1 < 1.e-6) && (secVtxZ_prong0-secVtxZ_prong1 < 1.e-6)){ 
+        registry.fill(HIST("hVtx2ProngX_signal_resolution"), (candidate.xSecondaryVertex()-secVtxX_prong0)*10000);
+        registry.fill(HIST("hVtx2ProngY_signal_resolution"), (candidate.ySecondaryVertex()-secVtxY_prong0)*10000);
+        registry.fill(HIST("hVtx2ProngZ_signal_resolution"), (candidate.zSecondaryVertex()-secVtxZ_prong0)*10000);
         }
       }
 

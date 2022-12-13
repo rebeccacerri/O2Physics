@@ -81,6 +81,12 @@ struct HfCandidateCreator3Prong {
   OutputObj<TH1F> hCovSVZZ{TH1F("hCovSVZZ", "3-prong candidates;ZZ element of cov. matrix of sec. vtx. position (cm^{2});entries", 100, 0., 0.2)};
   OutputObj<TH2F> hDcaXYProngs{TH2F("hDcaXYProngs", "DCAxy of 3-prong candidates;#it{p}_{T} (GeV/#it{c};#it{d}_{xy}) (#mum);entries", 100, 0., 20., 200, -500., 500.)};
   OutputObj<TH2F> hDcaZProngs{TH2F("hDcaZProngs", "DCAz of 3-prong candidates;#it{p}_{T} (GeV/#it{c};#it{d}_{z}) (#mum);entries", 100, 0., 20., 200, -500., 500.)};
+  
+  // Check background and signal 
+  OutputObj<TH1F> hVtx3ProngX_check{TH1F("hVtx3ProngX_check", "3-prong candidates;#it{x}_{sec. vtx.} (cm);entries", 1000, -2., 2.)};
+  OutputObj<TH1F> hVtx3ProngY_check{TH1F("hVtx3ProngY_check", "3-prong candidates;#it{y}_{sec. vtx.} (cm);entries", 1000, -2., 2.)};
+  OutputObj<TH1F> hVtx3ProngZ_check{TH1F("hVtx3ProngZ_check", "3-prong candidates;#it{z}_{sec. vtx.} (cm);entries", 1000, -20., 20.)};
+
 
   void init(InitContext const&)
   {
@@ -220,6 +226,11 @@ struct HfCandidateCreator3Prong {
         auto arrayMomenta = array{pvec0, pvec1, pvec2};
         massPiKPi = RecoDecay::m(std::move(arrayMomenta), array{massPi, massK, massPi});
         hMass3->Fill(massPiKPi);
+
+        // Check background and signal
+        hVtx3ProngX_check->Fill(secondaryVertex[0]);
+        hVtx3ProngY_check->Fill(secondaryVertex[1]);
+        hVtx3ProngZ_check->Fill(secondaryVertex[2]);
       }
     }
   }
@@ -230,6 +241,19 @@ struct HfCandidateCreator3ProngExpressions {
   Spawns<aod::HfCand3ProngExt> rowCandidateProng3;
   Produces<aod::HfCand3ProngMcRec> rowMcMatchRec;
   Produces<aod::HfCand3ProngMcGen> rowMcMatchGen;
+
+  // Histos background and signal
+  HistogramRegistry registry{ 
+    "registry",
+    {{"hVtx3ProngX_background", "3-prong candidates;#it{x}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -2., 2.}}}},
+     {"hVtx3ProngY_background", "3-prong candidates;#it{y}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -2., 2.}}}},
+     {"hVtx3ProngZ_background", "3-prong candidates;#it{z}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -20., 20.}}}},
+     {"hVtx3ProngX_signal", "3-prong candidates;#it{x}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -2., 2.}}}},
+     {"hVtx3ProngY_signal", "3-prong candidates;#it{y}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -2., 2.}}}},
+     {"hVtx3ProngZ_signal", "3-prong candidates;#it{z}_{sec. vtx.} (cm);entries", {HistType::kTH1F, {{1000, -20., 20.}}}},
+     {"hVtx3ProngX_signal_resolution", "3-prong candidates_resolution;#it{x}_{sec. vtx.} (#μm);entries", {HistType::kTH1F, {{100, -200.0, 200.}}}},
+     {"hVtx3ProngY_signal_resolution", "3-prong candidates_resolution;#it{y}_{sec. vtx.} (#μm);entries", {HistType::kTH1F, {{100, -200.0, 200.}}}},
+     {"hVtx3ProngZ_signal_resolution", "3-prong candidates_resolution;#it{z}_{sec. vtx.} (#μm);entries", {HistType::kTH1F, {{100, -200.0, 200.}}}}}};
 
   void init(InitContext const&) {}
 
@@ -313,6 +337,40 @@ struct HfCandidateCreator3ProngExpressions {
         if (indexRec > -1) {
           flag = sign * (1 << DecayType::XicToPKPi);
         }
+      }
+
+      // Fill histos background and signal
+      if (flag == 0){   
+        registry.fill(HIST("hVtx3ProngX_background"), candidate.xSecondaryVertex());
+        registry.fill(HIST("hVtx3ProngY_background"), candidate.ySecondaryVertex());
+        registry.fill(HIST("hVtx3ProngZ_background"), candidate.zSecondaryVertex());
+      } 
+      else {
+        registry.fill(HIST("hVtx3ProngX_signal"), candidate.xSecondaryVertex()); 
+        registry.fill(HIST("hVtx3ProngY_signal"), candidate.ySecondaryVertex());
+        registry.fill(HIST("hVtx3ProngZ_signal"), candidate.zSecondaryVertex());
+
+        auto prong0 = candidate.prong0_as<aod::BigTracksMC>().mcParticle();
+        double secVtxX_prong0 = prong0.vx();
+        double secVtxY_prong0 = prong0.vy();
+        double secVtxZ_prong0 = prong0.vz();
+        auto prong1 = candidate.prong1_as<aod::BigTracksMC>().mcParticle();
+        double secVtxX_prong1 = prong1.vx();
+        double secVtxY_prong1 = prong1.vy();
+        double secVtxZ_prong1 = prong1.vz();
+        auto prong2 = candidate.prong2_as<aod::BigTracksMC>().mcParticle();
+        double secVtxX_prong2 = prong2.vx();
+        double secVtxY_prong2 = prong2.vy();
+        double secVtxZ_prong2 = prong2.vz();
+
+        LOG(info) << secVtxX_prong0; // for checking
+
+        if ((secVtxX_prong0-secVtxX_prong1 < 1.e-6) && (secVtxX_prong0-secVtxX_prong2 < 1.e-6) && (secVtxX_prong1-secVtxX_prong2 < 1.e-6) && (secVtxY_prong0-secVtxY_prong1 < 1.e-6) && (secVtxY_prong0-secVtxY_prong2 < 1.e-6) && (secVtxY_prong1-secVtxY_prong2 < 1.e-6) && (secVtxZ_prong0-secVtxZ_prong1 < 1.e-6) && (secVtxZ_prong0-secVtxZ_prong2 < 1.e-6) && (secVtxZ_prong1-secVtxZ_prong2 < 1.e-6)){ 
+        registry.fill(HIST("hVtx3ProngX_signal_resolution"), (candidate.xSecondaryVertex()-secVtxX_prong0)*10000);
+        registry.fill(HIST("hVtx3ProngY_signal_resolution"), (candidate.ySecondaryVertex()-secVtxY_prong0)*10000);
+        registry.fill(HIST("hVtx3ProngZ_signal_resolution"), (candidate.zSecondaryVertex()-secVtxZ_prong0)*10000);
+        }
+
       }
 
       // Check whether the particle is non-prompt (from a b quark).
