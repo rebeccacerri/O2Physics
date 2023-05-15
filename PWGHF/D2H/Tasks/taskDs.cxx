@@ -32,6 +32,7 @@ struct HfTaskDs {
   Configurable<int> selectionFlagDs{"selectionFlagDs", 7, "Selection Flag for Ds"};
   Configurable<double> yCandMax{"yCandMax", -1., "max. cand. rapidity"};
   Configurable<std::vector<double>> binsPt{"binsPt", std::vector<double>{hf_cuts_ds_to_k_k_pi::vecBinsPt}, "pT bin limits"};
+  Configurable<int> decaychannelDs{"decayChannelDs", 0, "Int to consider the decay channel: 0 for DsPhiPi -> DsKKPi, 1 for DsK0*barK -> DsKKPi, 2 for (DsPhiPi -> DsKKPi && DsK0*barK -> DsKKPi)"};
 
   Filter dsFlagFilter = (o2::aod::hf_track_index::hfflag & static_cast<uint8_t>(1 << DecayType::DsToKKPi)) != static_cast<uint8_t>(0);
 
@@ -63,6 +64,9 @@ struct HfTaskDs {
     registry.add("hCt", "3-prong candidates;proper lifetime (D_{s}^{#pm}) * #it{c} (cm);entries", {HistType::kTH2F, {{100, 0., 100}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hDecayLength", "3-prong candidates;decay length (cm);entries", {HistType::kTH2F, {{200, 0., 2.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hDecayLengthXY", "3-prong candidates;decay length xy (cm);entries", {HistType::kTH2F, {{200, 0., 2.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hErrorDecayLength", "3-prong candidates; error decay length (cm);entries", {HistType::kTH2F, {{100, 0., 0.025}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hErrorDecayLengthXY", "3-prong candidates; error decay length xy (cm);entries", {HistType::kTH2F, {{100, 0., 0.025}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    //registry.add("hErrorDecayLengthXY_division", "3-prong candidates; division error decay length xy (cm);entries", {HistType::kTH2F, {{100, 0., 0.025}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hNormalisedDecayLengthXY", "3-prong candidates;norm. decay length xy;entries", {HistType::kTH2F, {{80, 0., 80.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hCPA", "3-prong candidates;cos. pointing angle;entries", {HistType::kTH2F, {{100, -1., 1.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hCPAxy", "3-prong candidates;cos. pointing angle xy;entries", {HistType::kTH2F, {{100, -1., 1.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
@@ -79,16 +83,22 @@ struct HfTaskDs {
     registry.add("hd0Prong1", "3-prong candidates;prong 1 DCA to prim. vertex (cm);entries", {HistType::kTH2F, {{100, -1., 1.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hd0Prong2", "3-prong candidates;prong 2 DCA to prim. vertex (cm);entries", {HistType::kTH2F, {{100, -1., 1.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hPtRecSig", "3-prong candidates (matched);#it{p}_{T}^{rec.} (GeV/#it{c});entries", {HistType::kTH1F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}}});
-    registry.add("hPtRecSigPrompt", "3-prong candidates (matched, prompt);#it{p}_{T}^{rec.} (GeV/#it{c});entries", {HistType::kTH1F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}}});
-    registry.add("hPtRecSigNonPrompt", "3-prong candidates (matched, non-prompt);#it{p}_{T}^{rec.} (GeV/#it{c});entries", {HistType::kTH1F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hPtRecSigPrompt", "3-prong candidates (matched, prompt);#it{p}_{T}^{rec.} (GeV/#it{c});entries", {HistType::kTH1F, {{360, 0., 36.}}});
+    registry.add("hPtRecSigNonPrompt", "3-prong candidates (matched, non-prompt);#it{p}_{T}^{rec.} (GeV/#it{c});entries", {HistType::kTH1F, {{360, 0., 36.}}});
     registry.add("hPtRecBkg", "3-prong candidates (unmatched);#it{p}_{T}^{rec.} (GeV/#it{c});entries", {HistType::kTH1F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hPtGen", "MC particles (matched);#it{p}_{T}^{gen.} (GeV/#it{c});entries", {HistType::kTH1F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hPtGenSig", "MC particles (matched);#it{p}_{T}^{gen.} (GeV/#it{c});entries", {HistType::kTH1F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}}});
-    registry.add("hPtGenPrompt", "MC particles (matched, prompt);#it{p}_{T}^{gen.} (GeV/#it{c});entries", {HistType::kTH1F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}}});
-    registry.add("hPtGenNonPrompt", "MC particles (matched, non-prompt);#it{p}_{T}^{gen.} (GeV/#it{c});entries", {HistType::kTH1F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hPtGenPrompt", "MC particles (matched, prompt);#it{p}_{T}^{gen.} (GeV/#it{c});entries", {HistType::kTH1F, {{360, 0., 36.}}});
+    registry.add("hPtGenNonPrompt", "MC particles (matched, non-prompt);#it{p}_{T}^{gen.} (GeV/#it{c});entries", {HistType::kTH1F, {{360, 0., 36.}}});
+    registry.add("hYGenPrompt", "MC particles (matched, prompt);#it{y};entries", {HistType::kTH1F, {{100, -5., 5.}}});
+    registry.add("hYGenNonPrompt", "MC particles (matched, non-prompt);#it{y};entries", {HistType::kTH1F, {{100, -5., 5.}}});
+    registry.add("hYGenProngPrompt", "MC particles (matched, prompt);#it{y};entries", {HistType::kTH1F, {{100, -5., 5.}}});
+    registry.add("hYGenProngNonPrompt", "MC particles (matched, prompt);#it{y};entries", {HistType::kTH1F, {{100, -5., 5.}}});
     registry.add("hPtVsYRecSigRecoPID", "3-prong candidates (RecoPID - matched);#it{p}_{T}^{rec.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {ybins}}});
     registry.add("hPtVsYRecSigPromptRecoPID", "3-prong candidates (RecoPID - matched, prompt);#it{p}_{T}^{rec.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {ybins}}});
     registry.add("hPtVsYRecSigNonPromptRecoPID", "3-prong candidates (RecoPID - matched, non-prompt);#it{p}_{T}^{rec.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {ybins}}});
+    registry.add("hPtRecSigPromptRecoPID", "3-prong candidates (RecoPID - matched, prompt);#it{p}_{T}^{rec.} (GeV/#it{c});entries", {HistType::kTH1F, {{360, 0., 36.}}});
+    registry.add("hPtRecSigNonPromptRecoPID", "3-prong candidates (RecoPID - matched, non-prompt);#it{p}_{T}^{rec.} (GeV/#it{c});entries", {HistType::kTH1F, {{360, 0., 36.}}});
     registry.add("hPtVsYRecSigRecoTopol", "3-prong candidates (RecoTopol - matched);#it{p}_{T}^{rec.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {ybins}}});
     registry.add("hPtVsYRecSigPromptRecoTopol", "3-prong candidates (RecoTopol - matched, prompt);#it{p}_{T}^{rec.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {ybins}}});
     registry.add("hPtVsYRecSigNonPromptRecoTopol", "3-prong candidates (RecoTopol - matched, non-prompt);#it{p}_{T}^{rec.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {ybins}}});
@@ -111,6 +121,9 @@ struct HfTaskDs {
     registry.fill(HIST("hCt"), ctDs(candidate), pt);
     registry.fill(HIST("hDecayLength"), candidate.decayLength(), pt);
     registry.fill(HIST("hDecayLengthXY"), candidate.decayLengthXY(), pt);
+    registry.fill(HIST("hErrorDecayLength"), candidate.errorDecayLength(), pt);
+    registry.fill(HIST("hErrorDecayLengthXY"), candidate.errorDecayLengthXY(), pt);
+    //registry.fill(HIST("hErrorDecayLengthXY_division"), candidate.decayLengthXY()/candidate.decayLengthXYNormalised(), pt);
     registry.fill(HIST("hNormalisedDecayLengthXY"), candidate.decayLengthXYNormalised(), pt);
     registry.fill(HIST("hCPA"), candidate.cpa(), pt);
     registry.fill(HIST("hCPAxy"), candidate.cpaXY(), pt);
@@ -186,6 +199,7 @@ struct HfTaskDs {
       }
       if (TESTBIT(flag, aod::SelectionStep::RecoPID)) {
         registry.fill(HIST("hPtVsYRecSigPromptRecoPID"), pt, y);
+        registry.fill(HIST("hPtRecSigPromptRecoPID"), pt);
       }
     }
 
@@ -198,11 +212,39 @@ struct HfTaskDs {
       }
       if (TESTBIT(flag, aod::SelectionStep::RecoPID)) {
         registry.fill(HIST("hPtVsYRecSigNonPromptRecoPID"), pt, y);
+        registry.fill(HIST("hPtRecSigNonPromptRecoPID"), pt);
       }
     }
 
     return;
   }
+  
+  /// Check the Ds decay channel 
+  /// \param candidate candidate MC particle
+  /// \param particlesMC  table with MC particles
+  /// \param flag is the selection flag: 0 for DsPhiPi -> DsKKPi, 1 for DsK0*barK -> DsKKPi, 2 for both
+  template <typename T, typename U>
+  bool checkDsChannel (const T& particlesMC, const U& candidate, int flag){
+      std::vector<int> arrAllDaughtersIndex;
+      RecoDecay::getDaughters(candidate, &arrAllDaughtersIndex, array{333, 211}, 1);
+      Int_t pdgCheck = 0;
+      if (flag == 0) { 
+        pdgCheck = 333;// check if phi meson in Ds daugs. (default)
+      } else if (flag == 1) {
+        pdgCheck = 313; 
+      } else {
+        return true;
+      }
+      for (auto indexDaughterI : arrAllDaughtersIndex) {
+        auto candidateDaughterI = particlesMC.rawIteratorAt(indexDaughterI - particlesMC.offset()); // ith daughter particle
+        auto PDGCandidateDaughterI = candidateDaughterI.pdgCode();
+
+        if (PDGCandidateDaughterI == pdgCheck) {
+          return true;
+        } 
+      }
+      return false;
+  } 
 
   void process(candDsData const& candidates)
   {
@@ -256,7 +298,15 @@ struct HfTaskDs {
 
     // MC gen.
     for (auto& particle : particlesMC) {
+      //Int_t pdg_particle = std::abs(particle.pdgCode());
+      //printf("PARTICLE, pdg = %d \n", pdg_particle);
       if (std::abs(particle.flagMcMatchGen()) == 1 << DecayType::DsToKKPi) {
+        if (!checkDsChannel(particlesMC, particle, decaychannelDs)) {
+          continue;
+        }
+        //printf("\tFound Ds!\n");
+        //Int_t firstdau = particle.daughters_as<aod::McParticles>()
+        printf("\t\tfirstdau\n");
         auto pt = particle.pt();
         auto y = RecoDecay::y(array{particle.px(), particle.py(), particle.pz()}, RecoDecay::getMassPDG(particle.pdgCode()));
         if (yCandMax >= 0. && std::abs(y) > yCandMax) {
@@ -269,12 +319,78 @@ struct HfTaskDs {
 
         if (particle.originMcGen() == RecoDecay::OriginType::Prompt) {
           registry.fill(HIST("hPtGenPrompt"), pt);
+          registry.fill(HIST("hYGenPrompt"), y);
           registry.fill(HIST("hPtVsYGenPrompt"), pt, y);
+          
+          //printf("New Ds - Prompt \n");
+          if (particle.has_daughters()) { // look for Ds daughters
+            for (auto& d : particle.daughters_as<aod::McParticles>()) { // loop over Ds daughters
+              Int_t pdg_dau = std::abs(d.pdgCode());
+              
+              if (d.has_daughters() && pdg_dau == 333) { // is Phi meson
+                //registry.fill(HIST("hPtGenPrompt"), pt);
+                //registry.fill(HIST("hYGenPrompt"), y);
+                //registry.fill(HIST("hPtVsYGenPrompt"), pt, y);
+                //printf("\t\tPhi: pdgnumber %d\n", pdg_dau);
+                for (auto& neph : d.daughters_as<aod::McParticles>()) { // loop over Phi meson dau.
+                  Int_t pdg_neph = std::abs(neph.pdgCode());
+                  if (pdg_neph != 321) {
+                    //printf("\t\t\tError: nephew not a kaon!, pdgnumber: %d", neph.pdgCode());
+                  } else {
+                    registry.fill(HIST("hYGenProngPrompt"), neph.y());
+                    //printf("\t\t\tK:  pdgnumber %d \n", neph.pdgCode());
+                  }
+                }    
+              } else if (pdg_dau == 211) { // is Pi
+                Double_t ydau = d.y();
+                registry.fill(HIST("hYGenProngPrompt"), ydau);
+                //printf("\t\tPi: pdgnumber %d\n", pdg_dau);
+              } else {
+                //printf("\t\tWARNING: unreco pdgnumber %d \n", pdg_dau);
+              }
+            }
+          } // end look for Ds daughters
+
         }
 
         if (particle.originMcGen() == RecoDecay::OriginType::NonPrompt) {
+          if (!checkDsChannel(particlesMC, particle, decaychannelDs)) {
+            continue;
+          }
           registry.fill(HIST("hPtGenNonPrompt"), pt);
+          registry.fill(HIST("hYGenNonPrompt"), y);
           registry.fill(HIST("hPtVsYGenNonPrompt"), pt, y);
+          
+          //printf("New Ds - NonPrompt\n");
+          if (particle.has_daughters()) { // look for Ds daughters
+            for (auto& d : particle.daughters_as<aod::McParticles>()) { // loop over Ds daughters
+              Int_t pdg_dau = std::abs(d.pdgCode());
+              //printf("\tDs daughters: pdgnumber %d \n", pdg_dau);
+
+              if (d.has_daughters() && pdg_dau == 333) { // is Phi meson
+                //registry.fill(HIST("hPtGenNonPrompt"), pt);
+                //registry.fill(HIST("hYGenNonPrompt"), y);
+                //registry.fill(HIST("hPtVsYGenNonPrompt"), pt, y);
+                //printf("\t\tPhi: pdgnumber\n");
+                for (auto& neph : d.daughters_as<aod::McParticles>()) { // loop over Phi meson dau.
+                  Int_t pdg_neph = std::abs(neph.pdgCode());
+                  if (pdg_neph != 321) {
+                    //printf("\t\t\tError: nephew not a kaon!, pdgnumber: %d", neph.pdgCode());
+                  } else {
+                    registry.fill(HIST("hYGenProngNonPrompt"), neph.y());
+                    //printf("\t\t\tK:  pdgnumber %d \n", neph.pdgCode());
+                  }
+                }    
+              } else if (pdg_dau == 211) { // is Pi
+                Double_t ydau = d.y();
+                registry.fill(HIST("hYGenProngNonPrompt"), ydau);
+                //printf("\t\tPi: pdgnumber\n");
+              } else {
+                //printf("\t\tWARNING: unreco pdgnumber %d \n", pdg_dau);
+              }
+            }
+          } // end look for Ds daughters
+
         }
       }
     }
