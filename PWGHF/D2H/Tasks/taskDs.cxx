@@ -32,6 +32,7 @@ struct HfTaskDs {
   Configurable<int> selectionFlagDs{"selectionFlagDs", 7, "Selection Flag for Ds"};
   Configurable<double> yCandMax{"yCandMax", -1., "max. cand. rapidity"};
   Configurable<std::vector<double>> binsPt{"binsPt", std::vector<double>{hf_cuts_ds_to_k_k_pi::vecBinsPt}, "pT bin limits"};
+  Configurable<int> decaychannelDs{"decaychannelDs", 0, "Int to consider the decay channel: 0 for DsPhiPi -> DsKKPi, 1 for DsK0*barK -> DsKKPi, 2 for both"};
 
   Filter dsFlagFilter = (o2::aod::hf_track_index::hfflag & static_cast<uint8_t>(1 << DecayType::DsToKKPi)) != static_cast<uint8_t>(0);
 
@@ -203,6 +204,33 @@ struct HfTaskDs {
 
     return;
   }
+  
+  /// Check the Ds decay channel 
+  /// \param particlesMC  table with MC particles
+  /// \param candidate candidate MC particle
+  /// \param flag is the selection flag: 0 for DsPhiPi -> DsKKPi, 1 for DsK0*barK -> DsKKPi, 2 for both
+  template <typename T, typename U>
+  bool checkDsChannel (const T& particlesMC, const U& candidate, int flag){
+      std::vector<int> arrAllDaughtersIndex;
+      RecoDecay::getDaughters(candidate, &arrAllDaughtersIndex, array{333, 211}, 1);
+      Int_t pdgCheck = 0;
+      if (flag == 0) { 
+        pdgCheck = 333; // check if phi meson in Ds daugs. (default)
+      } else if (flag == 1) {
+        pdgCheck = 313; // check if K0*bar meson in Ds daugs.
+      } else {
+        return true;
+      }
+      for (auto indexDaughterI : arrAllDaughtersIndex) {
+        auto candidateDaughterI = particlesMC.rawIteratorAt(indexDaughterI - particlesMC.offset()); // daughter particle
+        auto PDGCandidateDaughterI = candidateDaughterI.pdgCode();
+
+        if (PDGCandidateDaughterI == pdgCheck) {
+          return true;
+        } 
+      }
+      return false;
+  } 
 
   void process(candDsData const& candidates)
   {
@@ -257,6 +285,9 @@ struct HfTaskDs {
     // MC gen.
     for (auto& particle : particlesMC) {
       if (std::abs(particle.flagMcMatchGen()) == 1 << DecayType::DsToKKPi) {
+        if (!checkDsChannel(particlesMC, particle, decaychannelDs)) {
+          continue;
+        }
         auto pt = particle.pt();
         auto y = RecoDecay::y(array{particle.px(), particle.py(), particle.pz()}, RecoDecay::getMassPDG(particle.pdgCode()));
         if (yCandMax >= 0. && std::abs(y) > yCandMax) {
@@ -273,6 +304,9 @@ struct HfTaskDs {
         }
 
         if (particle.originMcGen() == RecoDecay::OriginType::NonPrompt) {
+          if (!checkDsChannel(particlesMC, particle, decaychannelDs)) {
+            continue;
+          }
           registry.fill(HIST("hPtGenNonPrompt"), pt);
           registry.fill(HIST("hPtVsYGenNonPrompt"), pt, y);
         }
