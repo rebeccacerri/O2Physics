@@ -253,7 +253,7 @@ struct HfTaskDs {
         registry.fill(HIST("hEtaRecBkg"), candidate.eta());
       }
     }
-    
+
     // MC gen.
     for (auto& particle : particlesMC) {
       if (std::abs(particle.flagMcMatchGen()) == 1 << DecayType::DsToKKPi) {
