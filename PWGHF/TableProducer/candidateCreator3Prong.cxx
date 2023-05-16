@@ -345,15 +345,15 @@ struct HfCandidateCreator3ProngExpressions {
       if (flag == 0) {
         // Printf("Checking Ds± → K± K∓ π±");
         if (RecoDecay::isMatchedMCGen(particlesMC, particle, pdg::Code::kDS, array{+kKPlus, -kKPlus, +kPiPlus}, true, &sign, 2)) {
-          if (decaychannelDs == 2) { 
+          if (decaychannelDs == 2) {
             flag = sign * (1 << DecayType::DsToKKPi);
           } else {
             Int_t pdgDau = 0;
-            if (decaychannelDs == 0) { 
+            if (decaychannelDs == 0) {
               pdgDau = 333;
             } else if (decaychannelDs == 1) {
               pdgDau = 313;
-            } 
+            }
             std::vector<int> arrAllDaughtersIndex;
             RecoDecay::getDaughters(particle, &arrAllDaughtersIndex, array{333, 211}, 1);
             for (auto indexDaughterI : arrAllDaughtersIndex) {
@@ -361,7 +361,7 @@ struct HfCandidateCreator3ProngExpressions {
               auto PDGCandidateDaughterI = candidateDaughterI.pdgCode();
               if (PDGCandidateDaughterI == pdgDau) {
                 flag = sign * (1 << DecayType::DsToKKPi);
-              } 
+              }
             }
           }
         }
