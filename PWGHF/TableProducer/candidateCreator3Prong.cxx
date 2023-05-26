@@ -251,7 +251,7 @@ struct HfCandidateCreator3ProngExpressions {
     std::array<int, 2> arrPDGResonant2 = {2224, kKPlus};  // Λc± → Δ(1232)±± K∓
     std::array<int, 2> arrPDGResonant3 = {3124, kPiPlus}; // Λc± → Λ(1520) π±
     std::array<int, 2> arrPDGResonantDsPhiPi = {333, kPiPlus}; // Ds± → Phi π±
-    std::array<int, 2> arrPDGResonantDsKstK = {313, kKPlus}; // Ds± → K*(892)0bar K±
+    std::array<int, 2> arrPDGResonantDsKstK = {313, kKPlus};   // Ds± → K*(892)0bar K±
 
     // Match reconstructed candidates.
     // Spawned table can be used directly
@@ -277,7 +277,7 @@ struct HfCandidateCreator3ProngExpressions {
         indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kDS, array{+kKPlus, -kKPlus, +kPiPlus}, true, &sign, 2);
         if (indexRec > -1) {
           flag = sign * (1 << DecayType::DsToKKPi);
-          
+
           // Printf("Flagging the different Ds± → K± K∓ π± decay channels");
           if (arrayDaughters[0].has_mcParticle()) {
             swapping = int8_t(std::abs(arrayDaughters[0].mcParticle().pdgCode()) == kPiPlus);
@@ -293,7 +293,7 @@ struct HfCandidateCreator3ProngExpressions {
             } else if ((arrPDGDaugh[0] == arrPDGResonantDsKstK[0] && arrPDGDaugh[1] == arrPDGResonantDsKstK[1]) || (arrPDGDaugh[0] == arrPDGResonantDsKstK[1] && arrPDGDaugh[1] == arrPDGResonantDsKstK[0])) {
               channel = 2;
             }
-          } 
+          }
         }
       }
 
@@ -362,7 +362,7 @@ struct HfCandidateCreator3ProngExpressions {
         // Printf("Checking Ds± → K± K∓ π±");
         if (RecoDecay::isMatchedMCGen(particlesMC, particle, pdg::Code::kDS, array{+kKPlus, -kKPlus, +kPiPlus}, true, &sign, 2)) {
           flag = sign * (1 << DecayType::DsToKKPi);
-          
+
           // Printf("Flagging the different Ds± → K± K∓ π± decay channels");
           RecoDecay::getDaughters(particle, &arrDaughIndex, array{0}, 1);
           if (arrDaughIndex.size() == 2) {

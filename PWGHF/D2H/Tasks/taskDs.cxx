@@ -228,7 +228,7 @@ struct HfTaskDs {
   {
     // MC rec.
     for (auto& candidate : candidates) {
-      if (candidate.flagMcDecayChanRec() == Dsdecaychannel){
+      if (candidate.flagMcDecayChanRec() == Dsdecaychannel) {
         if (yCandMax >= 0. && std::abs(yDs(candidate)) > yCandMax) {
           continue;
         }
@@ -259,7 +259,7 @@ struct HfTaskDs {
 
     // MC gen.
     for (auto& particle : particlesMC) {
-      if (particle.flagMcDecayChanGen() == Dsdecaychannel){
+      if (particle.flagMcDecayChanGen() == Dsdecaychannel) {
         if (std::abs(particle.flagMcMatchGen()) == 1 << DecayType::DsToKKPi) {
           auto pt = particle.pt();
           auto y = RecoDecay::y(array{particle.px(), particle.py(), particle.pz()}, RecoDecay::getMassPDG(particle.pdgCode()));
@@ -290,4 +290,4 @@ struct HfTaskDs {
 WorkflowSpec defineDataProcessing(ConfigContext const& cfgc)
 {
   return WorkflowSpec{adaptAnalysisTask<HfTaskDs>(cfgc)};
-} 
+}
