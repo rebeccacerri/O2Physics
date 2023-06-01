@@ -798,6 +798,13 @@ auto invMassDplusToPiKPi(const T& candidate)
 
 // Ds± → K± K∓ π±
 
+// selection DecayChannelDs
+enum DecayChannelDs {
+  PhiPi = 1,
+  K0stK,
+  NDecayChannelDs
+};
+
 template <typename T>
 auto ctDs(const T& candidate)
 {
