@@ -278,7 +278,6 @@ struct HfCandidateCreator3ProngExpressions {
         if (indexRec > -1) {
           flag = sign * (1 << DecayType::DsToKKPi);
           
-          // Printf("Flagging the different Ds± → K± K∓ π± decay channels");
           if (arrayDaughters[0].has_mcParticle()) {
             swapping = int8_t(std::abs(arrayDaughters[0].mcParticle().pdgCode()) == kPiPlus);
           }
@@ -289,9 +288,9 @@ struct HfCandidateCreator3ProngExpressions {
               arrPDGDaugh[iProng] = std::abs(daughI.pdgCode());
             }
             if ((arrPDGDaugh[0] == arrPDGResonantDsPhiPi[0] && arrPDGDaugh[1] == arrPDGResonantDsPhiPi[1]) || (arrPDGDaugh[0] == arrPDGResonantDsPhiPi[1] && arrPDGDaugh[1] == arrPDGResonantDsPhiPi[0])) {
-              channel = 1;
+              channel = o2::aod::hf_cand_3prong::DecayChannelDs::PhiPi;
             } else if ((arrPDGDaugh[0] == arrPDGResonantDsKstK[0] && arrPDGDaugh[1] == arrPDGResonantDsKstK[1]) || (arrPDGDaugh[0] == arrPDGResonantDsKstK[1] && arrPDGDaugh[1] == arrPDGResonantDsKstK[0])) {
-              channel = 2;
+              channel = o2::aod::hf_cand_3prong::DecayChannelDs::K0stK;
             }
           } 
         }
@@ -363,7 +362,6 @@ struct HfCandidateCreator3ProngExpressions {
         if (RecoDecay::isMatchedMCGen(particlesMC, particle, pdg::Code::kDS, array{+kKPlus, -kKPlus, +kPiPlus}, true, &sign, 2)) {
           flag = sign * (1 << DecayType::DsToKKPi);
           
-          // Printf("Flagging the different Ds± → K± K∓ π± decay channels");
           RecoDecay::getDaughters(particle, &arrDaughIndex, array{0}, 1);
           if (arrDaughIndex.size() == 2) {
             for (auto jProng = 0u; jProng < arrDaughIndex.size(); ++jProng) {
@@ -371,9 +369,9 @@ struct HfCandidateCreator3ProngExpressions {
               arrPDGDaugh[jProng] = std::abs(daughJ.pdgCode());
             }
             if ((arrPDGDaugh[0] == arrPDGResonantDsPhiPi[0] && arrPDGDaugh[1] == arrPDGResonantDsPhiPi[1]) || (arrPDGDaugh[0] == arrPDGResonantDsPhiPi[1] && arrPDGDaugh[1] == arrPDGResonantDsPhiPi[0])) {
-              channel = 1;
+              channel = o2::aod::hf_cand_3prong::DecayChannelDs::PhiPi;
             } else if ((arrPDGDaugh[0] == arrPDGResonantDsKstK[0] && arrPDGDaugh[1] == arrPDGResonantDsKstK[1]) || (arrPDGDaugh[0] == arrPDGResonantDsKstK[1] && arrPDGDaugh[1] == arrPDGResonantDsKstK[0])) {
-              channel = 2;
+              channel = o2::aod::hf_cand_3prong::DecayChannelDs::K0stK;
             }
           }
         }
