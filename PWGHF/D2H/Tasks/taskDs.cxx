@@ -232,7 +232,7 @@ struct HfTaskDs {
         continue;
       }
       if (std::abs(candidate.flagMcMatchRec()) == 1 << DecayType::DsToKKPi) {
-        if (candidate.flagMcDecayChanRec() != DsChannelCase){
+        if (candidate.flagMcDecayChanRec() != DsChannelCase) {
           continue;
         }
         auto prong0McPart = candidate.prong0_as<aod::BigTracksMC>().mcParticle_as<candDsMcGen>();
@@ -261,7 +261,7 @@ struct HfTaskDs {
     // MC gen.
     for (auto& particle : particlesMC) {
       if (std::abs(particle.flagMcMatchGen()) == 1 << DecayType::DsToKKPi) {
-        if (particle.flagMcDecayChanGen() != DsChannelCase){
+        if (particle.flagMcDecayChanGen() != DsChannelCase) {
           continue;
         }
         auto pt = particle.pt();
