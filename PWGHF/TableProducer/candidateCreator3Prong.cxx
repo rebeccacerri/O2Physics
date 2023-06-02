@@ -288,9 +288,9 @@ struct HfCandidateCreator3ProngExpressions {
               arrPDGDaugh[iProng] = std::abs(daughI.pdgCode());
             }
             if ((arrPDGDaugh[0] == arrPDGResonantDsPhiPi[0] && arrPDGDaugh[1] == arrPDGResonantDsPhiPi[1]) || (arrPDGDaugh[0] == arrPDGResonantDsPhiPi[1] && arrPDGDaugh[1] == arrPDGResonantDsPhiPi[0])) {
-              channel = o2::aod::hf_cand_3prong::DecayChannelDs::PhiPi;
+              channel = DecayChannelDs::PhiPi;
             } else if ((arrPDGDaugh[0] == arrPDGResonantDsKstK[0] && arrPDGDaugh[1] == arrPDGResonantDsKstK[1]) || (arrPDGDaugh[0] == arrPDGResonantDsKstK[1] && arrPDGDaugh[1] == arrPDGResonantDsKstK[0])) {
-              channel = o2::aod::hf_cand_3prong::DecayChannelDs::K0stK;
+              channel = DecayChannelDs::K0stK;
             }
           } 
         }
@@ -369,9 +369,9 @@ struct HfCandidateCreator3ProngExpressions {
               arrPDGDaugh[jProng] = std::abs(daughJ.pdgCode());
             }
             if ((arrPDGDaugh[0] == arrPDGResonantDsPhiPi[0] && arrPDGDaugh[1] == arrPDGResonantDsPhiPi[1]) || (arrPDGDaugh[0] == arrPDGResonantDsPhiPi[1] && arrPDGDaugh[1] == arrPDGResonantDsPhiPi[0])) {
-              channel = o2::aod::hf_cand_3prong::DecayChannelDs::PhiPi;
+              channel = DecayChannelDs::PhiPi;
             } else if ((arrPDGDaugh[0] == arrPDGResonantDsKstK[0] && arrPDGDaugh[1] == arrPDGResonantDsKstK[1]) || (arrPDGDaugh[0] == arrPDGResonantDsKstK[1] && arrPDGDaugh[1] == arrPDGResonantDsKstK[0])) {
-              channel = o2::aod::hf_cand_3prong::DecayChannelDs::K0stK;
+              channel = DecayChannelDs::K0stK;
             }
           }
         }
